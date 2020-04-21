@@ -12,6 +12,15 @@ public class Main {
         // TODO separate methods, throw JSON exceptions?
         Person[] people = new ObjectMapper().readValue(new File("./person test data.json"), Person[].class);
 
-        System.out.println(people[0].person_id);
+        people[0].detail();
+
+        // TODO
+        //  naive strategy: add to new array sortedPeople, sorting as you go. binary search thing?
+        // TODO
+
+//        // print the list
+//        for (Person person : sortedPeople) {
+//            person.detail();
+//        }
     }
 }

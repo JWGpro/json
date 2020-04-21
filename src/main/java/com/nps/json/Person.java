@@ -3,6 +3,11 @@ package com.nps.json;
 // TODO combine String var declarations?
 // TODO PropertyNamingStrategy
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 public class Person {
     public String person_id;
     public String created_datetime;
@@ -32,4 +37,20 @@ public class Person {
     public String team_id;
     public String org_id;
     public String area_id;
+
+    private Integer ageYears() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate then = LocalDate.parse(date_of_birth, formatter);
+
+        ZoneId zone = ZoneId.of("Z");  // Timezone: UTC
+        LocalDate now = LocalDate.now(zone);
+
+        Period period = Period.between(then, now);
+
+        return period.getYears();
+    }
+
+    public void detail() {
+        System.out.println(String.format("I am %s %s, %d years old.", first_name, last_name, ageYears()));
+    }
 }
