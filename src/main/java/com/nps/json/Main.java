@@ -7,7 +7,8 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        System.out.println("Parsing JSON...");
+        long startTime = System.currentTimeMillis();
+        System.out.println("Parsing JSON...\n");
 
         // TODO separate methods, throw JSON exceptions?
         Person[] people = new ObjectMapper().readValue(new File("./person test data.json"), Person[].class);
@@ -22,5 +23,8 @@ public class Main {
 //        for (Person person : sortedPeople) {
 //            person.detail();
 //        }
+
+        long timeLapsed = (System.currentTimeMillis() - startTime);
+        System.out.println(String.format("\nExecution time: %d ms", timeLapsed));
     }
 }
