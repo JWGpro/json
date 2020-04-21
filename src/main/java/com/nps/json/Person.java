@@ -1,11 +1,9 @@
 package com.nps.json;
 
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+// TODO combine String var declarations?
+// TODO PropertyNamingStrategy
 
-@JsonNaming
 public class Person {
-    // TODO combine String var declarations?
-    // TODO var name conversion strategy
     public String person_id;
     public String created_datetime;
     public String created_by_username;
