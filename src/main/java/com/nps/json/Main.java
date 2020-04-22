@@ -2,63 +2,60 @@ package com.nps.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        // Method 2 (filter first, combine sort, output stream): ~400 ms
+        // Method 1 (step-by-step): ~440 ms
         Checkpoint.mark("start");
 
         // Parse JSON: ~250 ms
-        Person[] ppl = new ObjectMapper().readValue(new File("./person test data.json"), Person[].class);
-
-        System.out.println(String.format("Raw length: %d", ppl.length));
+        System.out.println("Parsing JSON...");
+        Person[] people = new ObjectMapper().readValue(new File("./person test data.json"), Person[].class);
         Checkpoint.mark("JSON parsed");
 
-        // Filter by DOB: ~50 ms
-        List<Person> people = new ArrayList<>(Arrays.asList(ppl));
-        people.removeIf(Person::bornAfter2000);  // how is this slower than sorting?
+        // Remove duplicates: ~10 ms
+        System.out.println(String.format("Raw length: %d", people.length));
+        Set<Person> uniques = new TreeSet<>(new Comparator<Person>() {
+            @Override
+            public int compare(Person o1, Person o2) {
+                if (o1.first_name.equalsIgnoreCase(o2.first_name) &&
+                        o1.middle_name.equalsIgnoreCase(o2.middle_name) &&
+                        o1.last_name.equalsIgnoreCase(o2.last_name) &&
+                        o1.date_of_birth.equals(o2.date_of_birth)
+                ) {
+                    return 0;
+                }
+                return 1;
+            }
+        });
+        uniques.addAll(Arrays.asList(people));
+        // TODO: is this already sorted? then need to specify first.
+        System.out.println(String.format("Duplicates removed: %d", uniques.size()));
+        Checkpoint.mark("duplicates removed");
 
-        System.out.println(String.format("Filtered by DOB: %d", people.size()));
+        // Filter by DOB: ~60 ms (down from ~100 ms)
+        uniques.removeIf(Person::bornAfter2000);
+        System.out.println(String.format("Filtered by DOB: %d", uniques.size()));
         Checkpoint.mark("DOB-filtering");
 
-        // Remove duplicates; sort: ~5 ms
-        Set<Person> uniques = new TreeSet<>((o1, o2) -> {
-            if (
-                    o1.first_name.equalsIgnoreCase(o2.first_name) &&
-                    o1.middle_name.equalsIgnoreCase(o2.middle_name) &&
-                    o1.last_name.equalsIgnoreCase(o2.last_name) &&
-                    o1.date_of_birth.equals(o2.date_of_birth)
-            ) {
-                // remove these: duplicates
-                return 0;
-            }
-            // sort by first name, then last name
-            //  don't allow return 0 as this would remove the object despite not being a dupe
-            //  but can't do Python-like truthy evaluations (return 0 or 0 or 1)
-            int result = o1.first_name.compareTo(o2.first_name);
-            if (result == 0) {
-                result = o1.last_name.compareTo(o2.last_name);
-                if (result == 0) {
-                    result = 1;
-                }
-            }
-            return result;
-        });
-        uniques.addAll(people);
+        // Sort: ~10 ms
+        ArrayList<Person> sorted = new ArrayList<>(uniques);
 
-        System.out.println(String.format("Duplicates removed; sorted: %d", uniques.size()));
-        Checkpoint.mark("duplicates removed; sorted");
+        Comparator<Person> c = Comparator.comparing(p -> p.first_name);
+        c = c.thenComparing(p -> p.last_name);
 
-        // Print: ~90 ms
-        // not much faster at all for this file
-        Writer out = new OutputStreamWriter(System.out);
-        for (Person person : uniques) {
-            out.write(person.detail());
-        }
-        out.flush();
+        sorted.sort(c);
+        Checkpoint.mark("sorted");
 
+        // Print: ~100 ms
+        sorted.forEach(Person::detail);
         Checkpoint.mark("printed");
+
+        // TODO
+        //  naive strategy: add to new array sortedPeople, sorting as you go. binary search thing?
+        // TODO
     }
 }

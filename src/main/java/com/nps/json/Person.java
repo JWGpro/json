@@ -38,8 +38,8 @@ public class Person {
     public String org_id;
     public String area_id;
 
-    public String detail() {
-        return String.format("I am %s %s, %d years old.\n", first_name, last_name, ageYears());
+    public void detail() {
+        System.out.println(String.format("I am %s %s, %d years old.", first_name, last_name, ageYears()));
     }
 
     public LocalDate dobDate() {
