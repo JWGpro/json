@@ -6,6 +6,10 @@ import com.fasterxml.jackson.core.JsonToken;
 
 import java.io.*;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
     public static void main(String[] args) {
@@ -34,6 +38,8 @@ public class Main {
 
             jsonStreamWrite(c);
             Checkpoint.mark("table populated");
+
+            outputQuery(c);
 
             sql = "DROP TABLE people;";
             stmt.executeUpdate(sql);
@@ -109,5 +115,37 @@ public class Main {
     private static boolean bornAfter2000(String str) {
         // Can only be 1 (1999 or earlier) or 2 (2000 or later).
         return str.charAt(0) == '2';
+    }
+
+    private static void outputQuery(Connection c) throws SQLException {
+        Statement stmt = c.createStatement();
+        ResultSet rs = stmt.executeQuery( "SELECT * FROM people;" );
+        Checkpoint.mark("DB queried");
+
+        while ( rs.next() ) {
+            String firstName = rs.getString("first_name");
+            String lastName = rs.getString("last_name");
+            String dateOfBirth = rs.getString("date_of_birth");
+
+            // TODO: output stream
+            String output = String.format("I am %s %s, %d years old.", firstName, lastName, ageYears(dateOfBirth));
+            System.out.println(output);
+        }
+        Checkpoint.mark("query printed");
+
+        rs.close();
+        stmt.close();
+    }
+
+    private static Integer ageYears(String dobStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate then = LocalDate.parse(dobStr, formatter);
+
+        ZoneId zone = ZoneId.of("Z");  // Timezone: UTC
+        LocalDate now = LocalDate.now(zone);
+
+        Period period = Period.between(then, now);
+
+        return period.getYears();
     }
 }
