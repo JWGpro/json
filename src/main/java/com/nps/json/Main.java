@@ -3,12 +3,9 @@ package com.nps.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.swing.plaf.nimbus.State;
 import java.io.*;
 import java.sql.*;
-import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -36,7 +33,7 @@ public class Main {
             Checkpoint.mark("table created");
 
             jsonStreamWrite(c);
-            Checkpoint.mark("table populated");  // TODO: >3000 ms, why so slow?
+            Checkpoint.mark("table populated");
 
             sql = "DROP TABLE people;";
             stmt.executeUpdate(sql);
@@ -52,6 +49,8 @@ public class Main {
     }
 
     private static void jsonStreamWrite(Connection c) throws IOException, SQLException {
+        c.setAutoCommit(false);
+
         JsonParser jParser = new JsonFactory().createParser(new File("./person test data.json"));
 
         String firstName = null;
@@ -91,6 +90,7 @@ public class Main {
                 // filter by DOB
                 // only insert data we'll want back after sorting
                 if (dateOfBirth != null && !bornAfter2000(dateOfBirth)) {
+                    // >3000 ms on the test file if not c.setAutoCommit(false).
                     stmt.setString(1, firstName);
                     stmt.setString(2, middleName);
                     stmt.setString(3, lastName);
@@ -101,6 +101,9 @@ public class Main {
             }
         }
         jParser.close();
+
+        c.commit();
+        c.setAutoCommit(true);
     }
 
     private static boolean bornAfter2000(String str) {
