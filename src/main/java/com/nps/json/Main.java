@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 
 public class Main {
     public static void main(String[] args) {
+        // Interim DB method: ~650 ms
+
         Checkpoint.mark("start");
 
         Connection c = null;
@@ -22,7 +24,7 @@ public class Main {
             c = DriverManager
                     .getConnection("jdbc:postgresql://localhost/nps_json_temp",
                             "postgres", "password");  // user-pass
-            Checkpoint.mark("DB connection");
+            Checkpoint.mark("DB connection");  // ~300 ms
 
             stmt = c.createStatement();
             String sql;
@@ -34,16 +36,16 @@ public class Main {
                     " last_name      TEXT    NOT NULL, " +
                     " date_of_birth  TEXT    NOT NULL)";
             stmt.executeUpdate(sql);
-            Checkpoint.mark("table created");
+            Checkpoint.mark("table created");  // ~25 ms
 
             jsonStreamWrite(c);
-            Checkpoint.mark("table populated");
+            Checkpoint.mark("table populated");  // 220 ms
 
             outputQuery(c);
 
             sql = "DROP TABLE people;";
             stmt.executeUpdate(sql);
-            Checkpoint.mark("table dropped");
+            Checkpoint.mark("table dropped");  // ~5 ms
 
             stmt.close();
             c.close();
@@ -118,11 +120,14 @@ public class Main {
     }
 
     private static void outputQuery(Connection c) throws SQLException {
+        // TODO: record count, but isn't trivial to get
+        String sql = "SELECT DISTINCT first_name, middle_name, last_name, date_of_birth FROM people " +
+                "ORDER BY first_name ASC, last_name ASC";
         Statement stmt = c.createStatement();
-        ResultSet rs = stmt.executeQuery( "SELECT * FROM people;" );
-        Checkpoint.mark("DB queried");
+        ResultSet rs = stmt.executeQuery(sql);
+        Checkpoint.mark("DB queried");  // ~15 ms
 
-        while ( rs.next() ) {
+        while (rs.next()) {
             String firstName = rs.getString("first_name");
             String lastName = rs.getString("last_name");
             String dateOfBirth = rs.getString("date_of_birth");
@@ -131,7 +136,7 @@ public class Main {
             String output = String.format("I am %s %s, %d years old.", firstName, lastName, ageYears(dateOfBirth));
             System.out.println(output);
         }
-        Checkpoint.mark("query printed");
+        Checkpoint.mark("query printed");  // ~100 ms
 
         rs.close();
         stmt.close();
