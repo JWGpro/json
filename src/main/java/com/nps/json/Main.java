@@ -39,8 +39,11 @@ public class Main {
             int result = o1.first_name.compareTo(o2.first_name);
             if (result == 0) {
                 result = o1.last_name.compareTo(o2.last_name);
+                if (result == 0) {
+                    result = 1;
+                }
             }
-            return result == 0 ? 1 : result;
+            return result;
         });
         uniques.addAll(people);
 
