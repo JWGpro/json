@@ -35,7 +35,8 @@ public class Main {
                 return 0;
             }
             // sort by first name, then last name
-            // don't allow return 0 as this would remove the object despite not being a dupe
+            //  don't allow return 0 as this would remove the object despite not being a dupe
+            //  but can't do Python-like truthy evaluations (return 0 or 0 or 1)
             int result = o1.first_name.compareTo(o2.first_name);
             if (result == 0) {
                 result = o1.last_name.compareTo(o2.last_name);
