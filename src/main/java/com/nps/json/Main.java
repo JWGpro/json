@@ -11,11 +11,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Checkpoint.mark("start");
 
+        // ~250 ms
         System.out.println("Parsing JSON...");
         Person[] people = new ObjectMapper().readValue(new File("./person test data.json"), Person[].class);
         Checkpoint.mark("JSON parsed");
 
-        // Method 1
+        // Method 1 (step-by-step): + 5 + 100 + 5 + 100 (~460 ms)
 
         // Remove duplicates
         System.out.println(String.format("Raw length: %d", people.length));
@@ -38,13 +39,23 @@ public class Main {
         Checkpoint.mark("duplicates removed");
 
         // Filter by DOB
-        uniques.removeIf(person -> person.dobDate().isAfter(LocalDate.parse("1999-12-31")));
+        LocalDate ref = LocalDate.parse("1999-12-31");
+        uniques.removeIf(person -> person.dobDate().isAfter(ref));
         System.out.println(String.format("Filtered by DOB: %d", uniques.size()));
         Checkpoint.mark("DOB-filtering");
 
         // Sort
+        ArrayList<Person> sorted = new ArrayList<>(uniques);
+
+        Comparator<Person> c = Comparator.comparing(p -> p.first_name);
+        c = c.thenComparing(p -> p.last_name);
+
+        sorted.sort(c);
+        Checkpoint.mark("sorted");
 
         // Print
+        sorted.forEach(Person::detail);
+        Checkpoint.mark("printed");
 
         // TODO
         //  naive strategy: add to new array sortedPeople, sorting as you go. binary search thing?
