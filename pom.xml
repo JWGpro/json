@@ -59,6 +59,12 @@
             <version>2.10.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.12</version>
+        </dependency>
+
     </dependencies>
 
 </project>
