@@ -9,16 +9,15 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        // Method 1 (step-by-step): ~440 ms
         Checkpoint.mark("start");
 
-        // ~250 ms
+        // Parse JSON: ~250 ms
         System.out.println("Parsing JSON...");
         Person[] people = new ObjectMapper().readValue(new File("./person test data.json"), Person[].class);
         Checkpoint.mark("JSON parsed");
 
-        // Method 1 (step-by-step): + 5 + 100 + 5 + 100 (~460 ms)
-
-        // Remove duplicates
+        // Remove duplicates: ~10 ms
         System.out.println(String.format("Raw length: %d", people.length));
         Set<Person> uniques = new TreeSet<>(new Comparator<Person>() {
             @Override
@@ -38,13 +37,12 @@ public class Main {
         System.out.println(String.format("Duplicates removed: %d", uniques.size()));
         Checkpoint.mark("duplicates removed");
 
-        // Filter by DOB
-        LocalDate ref = LocalDate.parse("1999-12-31");
-        uniques.removeIf(person -> person.dobDate().isAfter(ref));
+        // Filter by DOB: ~60 ms (down from ~100 ms)
+        uniques.removeIf(Person::bornAfter2000);
         System.out.println(String.format("Filtered by DOB: %d", uniques.size()));
         Checkpoint.mark("DOB-filtering");
 
-        // Sort
+        // Sort: ~10 ms
         ArrayList<Person> sorted = new ArrayList<>(uniques);
 
         Comparator<Person> c = Comparator.comparing(p -> p.first_name);
@@ -53,17 +51,12 @@ public class Main {
         sorted.sort(c);
         Checkpoint.mark("sorted");
 
-        // Print
+        // Print: ~100 ms
         sorted.forEach(Person::detail);
         Checkpoint.mark("printed");
 
         // TODO
         //  naive strategy: add to new array sortedPeople, sorting as you go. binary search thing?
         // TODO
-
-//        // print the list
-//        for (Person person : sortedPeople) {
-//            person.detail();
-//        }
     }
 }

@@ -47,6 +47,11 @@ public class Person {
         return LocalDate.parse(date_of_birth, formatter);
     }
 
+    public boolean bornAfter2000() {
+        // Can only be 1 (1999 or earlier) or 2 (2000 or later).
+        return date_of_birth.charAt(0) == '2';
+    }
+
     private Integer ageYears() {
         ZoneId zone = ZoneId.of("Z");  // Timezone: UTC
         LocalDate now = LocalDate.now(zone);
