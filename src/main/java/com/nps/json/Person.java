@@ -38,19 +38,21 @@ public class Person {
     public String org_id;
     public String area_id;
 
-    private Integer ageYears() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate then = LocalDate.parse(date_of_birth, formatter);
+    public void detail() {
+        System.out.println(String.format("I am %s %s, %d years old.", first_name, last_name, ageYears()));
+    }
 
+    public LocalDate dobDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDate.parse(date_of_birth, formatter);
+    }
+
+    private Integer ageYears() {
         ZoneId zone = ZoneId.of("Z");  // Timezone: UTC
         LocalDate now = LocalDate.now(zone);
 
-        Period period = Period.between(then, now);
+        Period period = Period.between(dobDate(), now);
 
         return period.getYears();
-    }
-
-    public void detail() {
-        System.out.println(String.format("I am %s %s, %d years old.", first_name, last_name, ageYears()));
     }
 }
